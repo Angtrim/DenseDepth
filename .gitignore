@@ -5,3 +5,5 @@
 /.vscode
 *.jpg
 *.obj
+Tensorflow/__pycache__/
+*.idea
