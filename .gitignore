@@ -9,3 +9,5 @@ Tensorflow/__pycache__/
 *.idea
 Tensorflow/data
 .DS_Store
+*.tflite
+Tensorflow/training*
