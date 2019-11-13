@@ -7,6 +7,7 @@ from loss import depth_loss_function
 batch_size = 8
 learning_rate = 0.0001
 epochs = 1
+save_lite = True
 
 
 model = DepthEstimate()
@@ -23,7 +24,9 @@ checkpoint_path = "training_1/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_weights_only=True, verbose=1)
 model.fit(dataset, epochs=epochs, steps_per_epoch=dl.length // batch_size, shuffle=True, callbacks=[cp_callback])
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
-converter.optimizations = [tf.lite.Optimize.DEFAULT]
-tflite_model = converter.convert()
-open("model.tflite", "wb").write(tflite_model)
+
+if save_lite:
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    tflite_model = converter.convert()
+    open("model.tflite", "wb").write(tflite_model)
