@@ -7,3 +7,5 @@
 *.obj
 Tensorflow/__pycache__/
 *.idea
+Tensorflow/data
+.DS_Store
