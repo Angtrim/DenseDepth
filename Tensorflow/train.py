@@ -8,9 +8,9 @@ from tensorflow.keras import Model, layers
 import tensorflow.keras.backend as K
 
 
-batch_size = 4
+batch_size = 8
 learning_rate = 0.0001
-epochs = 1
+epochs = 50
 save_lite = True
 
 input_img = keras.Input(shape=(480, 640, 3))  # adapt this if using `channels_first` image data format
@@ -25,7 +25,7 @@ autoencoder = Model([input_img,img_shape], decoder)
 autoencoder.summary()
 
 
-dl = DataLoader(DEBUG=True)
+dl = DataLoader(DEBUG=False)
 dataset = dl.get_batched_dataset(batch_size)
 
 print('Data loader ready.')
@@ -38,7 +38,7 @@ autoencoder.compile(loss=depth_loss_function, optimizer=optimizer)
 checkpoint_path = "training_1/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_weights_only=True, verbose=1)
-autoencoder.fit(dataset, epochs=epochs, steps_per_epoch=dl.length // batch_size, shuffle=True, callbacks=[cp_callback])
+autoencoder.fit(dataset, epochs=epochs, steps_per_epoch=dl.length // batch_size, shuffle=True)
 
 #model.save("miomodel")
 if save_lite:
