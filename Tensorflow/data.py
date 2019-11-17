@@ -3,6 +3,7 @@ import tensorflow as tf
 from io import BytesIO
 from zipfile import ZipFile
 from sklearn.utils import shuffle
+import numpy as np
 
 class DataLoader():
     def __init__(self, csv_file='data/nyu2_train.csv', DEBUG=False):
@@ -22,7 +23,7 @@ class DataLoader():
         nyu2_train = shuffle(nyu2_train, random_state=0)
 
         # Test on a smaller dataset
-        if DEBUG: nyu2_train = nyu2_train[:10]
+        if DEBUG: nyu2_train = nyu2_train[:100]
         
         # A vector of RGB filenames.
         self.filenames = [i[0] for i in nyu2_train]
@@ -44,8 +45,11 @@ class DataLoader():
         
         # Normalize the depth values (in cm)
         depth = 1000 / tf.clip_by_value(depth * 1000, 10, 1000)
+        img_size = np.array([15,20])
+        data_tf = tf.convert_to_tensor(img_size, np.int32)
 
-        return rgb, depth
+
+        return (rgb, data_tf), depth
 
     def get_batched_dataset(self, batch_size):
         self.dataset = tf.data.Dataset.from_tensor_slices((self.filenames, self.labels))

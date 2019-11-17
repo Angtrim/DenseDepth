@@ -1,16 +1,30 @@
 import os
-from model import DepthEstimate
 from data import DataLoader
 import tensorflow as tf
 from loss import depth_loss_function
+from model import Encoder, Decoder
+from tensorflow import keras
+from tensorflow.keras import Model, layers
+import tensorflow.keras.backend as K
 
-batch_size = 8
+
+batch_size = 4
 learning_rate = 0.0001
 epochs = 1
 save_lite = True
 
+input_img = keras.Input(shape=(480, 640, 3))  # adapt this if using `channels_first` image data format
+img_shape = keras.Input(shape=(2,),batch_size=1, name='sh',dtype='int32')
+sh = K.mean(img_shape,axis=0)
 
-model = DepthEstimate()
+encoder = Encoder()
+decode_filters=int(encoder.layers[-1].output[0].shape[-1] // 2)
+encoder = encoder(input_img)
+decoder = Decoder(decode_filters=decode_filters,sh=sh)([encoder,sh])
+autoencoder = Model([input_img,img_shape], decoder)
+autoencoder.summary()
+
+
 dl = DataLoader(DEBUG=True)
 dataset = dl.get_batched_dataset(batch_size)
 
@@ -18,15 +32,16 @@ print('Data loader ready.')
 
 optimizer = tf.keras.optimizers.Adam(lr=learning_rate, amsgrad=True)
 
-model.compile(loss=depth_loss_function, optimizer=optimizer)
+autoencoder.compile(loss=depth_loss_function, optimizer=optimizer)
+
 
 checkpoint_path = "training_1/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_weights_only=True, verbose=1)
-model.fit(dataset, epochs=epochs, steps_per_epoch=dl.length // batch_size, shuffle=True, callbacks=[cp_callback])
+autoencoder.fit(dataset, epochs=epochs, steps_per_epoch=dl.length // batch_size, shuffle=True, callbacks=[cp_callback])
 
+#model.save("miomodel")
 if save_lite:
-    converter = tf.lite.TFLiteConverter.from_keras_model(model)
-    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    converter = tf.lite.TFLiteConverter.from_keras_model(autoencoder)
     tflite_model = converter.convert()
     open("model.tflite", "wb").write(tflite_model)

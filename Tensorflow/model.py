@@ -1,12 +1,16 @@
 from tensorflow.keras.layers import Conv2D, UpSampling2D, LeakyReLU, Concatenate
 from tensorflow.keras import Model
 from tensorflow.keras.applications import DenseNet169
+from up import BilinearUpSampling2D
+import tensorflow.keras.backend as K
+from tensorflow import keras
+
 
 
 class UpscaleBlock(Model):
-    def __init__(self, filters, name):
+    def __init__(self, filters, shape_tensor, size, name):
         super(UpscaleBlock, self).__init__()
-        self.up = UpSampling2D(size=(2, 2), interpolation='bilinear', name=name + '_upsampling2d')
+        self.up = BilinearUpSampling2D(shape_tensor, size=size, name=name + '_upsampling2d')
         self.concat = Concatenate(name=name + '_concat')  # Skip connection
         self.convA = Conv2D(filters=filters, kernel_size=3, strides=1, padding='same', name=name + '_convA')
         self.reluA = LeakyReLU(alpha=0.2)
@@ -14,7 +18,8 @@ class UpscaleBlock(Model):
         self.reluB = LeakyReLU(alpha=0.2)
 
     def call(self, x):
-        b = self.reluB(self.convB(self.reluA(self.convA(self.concat([self.up(x[0]), x[1]])))))
+        upresult = self.up([x[1],x[0]])
+        b = self.reluB(self.convB(self.reluA(self.convA(self.concat([upresult, x[2]])))))
         return b
 
 
@@ -35,31 +40,26 @@ class Encoder(Model):
 
 
 class Decoder(Model):
-    def __init__(self, decode_filters):
+    def __init__(self, decode_filters, sh):
         super(Decoder, self).__init__()
         self.conv2 = Conv2D(filters=decode_filters, kernel_size=1, padding='same', name='conv2')
-        self.up1 = UpscaleBlock(filters=decode_filters // 2, name='up1')
-        self.up2 = UpscaleBlock(filters=decode_filters // 4, name='up2')
-        self.up3 = UpscaleBlock(filters=decode_filters // 8, name='up3')
-        self.up4 = UpscaleBlock(filters=decode_filters // 16, name='up4')
+        self.up1 = UpscaleBlock(filters=decode_filters // 2, shape_tensor=sh, size=(2, 2), name='up1')
+        self.up2 = UpscaleBlock(filters=decode_filters // 4, shape_tensor=sh, size=(4, 4), name='up2')
+        self.up3 = UpscaleBlock(filters=decode_filters // 8, shape_tensor=sh, size=(8, 8), name='up3')
+        self.up4 = UpscaleBlock(filters=decode_filters // 16, shape_tensor=sh, size=(16, 16), name='up4')
         self.conv3 = Conv2D(filters=1, kernel_size=3, strides=1, padding='same', name='conv3')
 
+
     def call(self, features):
-        x, pool1, pool2, pool3, conv1 = features[0], features[1], features[2], features[3], features[4]
+        sh, x, pool1, pool2, pool3, conv1 = features[1], features[0][0], features[0][1], features[0][2], features[0][3], features[0][4]
         up0 = self.conv2(x)
-        up1 = self.up1([up0, pool3])
-        up2 = self.up2([up1, pool2])
-        up3 = self.up3([up2, pool1])
-        up4 = self.up4([up3, conv1])
+        up1 = self.up1([up0, sh, pool3])
+        up2 = self.up2([up1, sh, pool2])
+        up3 = self.up3([up2, sh, pool1])
+        up4 = self.up4([up3, sh, conv1])
         return self.conv3(up4)
 
 
-class DepthEstimate(Model):
-    def __init__(self):
-        super(DepthEstimate, self).__init__()
-        self.encoder = Encoder()
-        self.decoder = Decoder(decode_filters=int(self.encoder.layers[-1].output[0].shape[-1] // 2))
-        print('\nModel created.')
 
-    def call(self, x):
-        return self.decoder(self.encoder(x))
+
+
