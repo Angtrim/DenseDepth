@@ -23,7 +23,7 @@ class DataLoader():
         nyu2_train = shuffle(nyu2_train, random_state=0)
 
         # Test on a smaller dataset
-        if DEBUG: nyu2_train = nyu2_train[:10]
+        if DEBUG: nyu2_train = nyu2_train[:100]
         
         # A vector of RGB filenames.
         self.filenames = [i[0] for i in nyu2_train]
@@ -36,12 +36,14 @@ class DataLoader():
 
     def _parse_function(self, filename, label): 
         # Read images from disk
-        image_decoded = tf.image.decode_jpeg(tf.io.read_file(filename))
-        depth_resized = tf.image.resize(tf.image.decode_jpeg(tf.io.read_file(label)), [self.shape_depth[0], self.shape_depth[1]])
+        image_decoded = tf.image.decode_jpeg(tf.io.read_file(filename), channels=3)
+        depth_resized = tf.image.decode_jpeg(tf.io.read_file(label))
 
+        
         # Format
-        rgb = tf.image.convert_image_dtype(image_decoded, dtype=tf.float32)
-        depth = tf.image.convert_image_dtype(depth_resized / 255.0, dtype=tf.float32)
+        rgb = tf.image.convert_image_dtype(image_decoded, tf.float32)
+        depth = tf.image.convert_image_dtype(depth_resized, dtype=tf.float32)
+        depth = tf.image.resize(depth, [self.shape_depth[0],self.shape_depth[1]])
         
         # Normalize the depth values (in cm)
         depth = 1000 / tf.clip_by_value(depth * 1000, 10, 1000)

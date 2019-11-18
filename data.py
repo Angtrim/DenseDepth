@@ -24,7 +24,7 @@ def get_nyu_data(batch_size, nyu_data_zipfile='nyu_data.zip'):
     shape_depth = (batch_size, 240, 320, 1)
 
     # Helpful for testing...
-    if False:
+    if True:
         nyu2_train = nyu2_train[:10]
         nyu2_test = nyu2_test[:10]
 
@@ -69,8 +69,8 @@ class NYU_BasicAugmentRGBSequence(Sequence):
             x = np.clip(np.asarray(Image.open( BytesIO(self.data[sample[0]]) )).reshape(480,640,3)/255,0,1)
             y = np.clip(np.asarray(Image.open( BytesIO(self.data[sample[1]]) )).reshape(480,640,1)/255*self.maxDepth,0,self.maxDepth)
             y = DepthNorm(y, maxDepth=self.maxDepth)
-
-            batch_x[i] = nyu_resize(x, 480)
+            img_size = np.array([15,20])
+            batch_x[i] = (nyu_resize(x, 480), img_size)
             batch_y[i] = nyu_resize(y, 240)
 
             if is_apply_policy: batch_x[i], batch_y[i] = self.policy(batch_x[i], batch_y[i])
@@ -104,8 +104,8 @@ class NYU_BasicRGBSequence(Sequence):
             x = np.clip(np.asarray(Image.open( BytesIO(self.data[sample[0]]))).reshape(480,640,3)/255,0,1)
             y = np.asarray(Image.open(BytesIO(self.data[sample[1]])), dtype=np.float32).reshape(480,640,1).copy().astype(float) / 10.0
             y = DepthNorm(y, maxDepth=self.maxDepth)
-
-            batch_x[i] = nyu_resize(x, 480)
+            img_size = np.array([15,20])
+            batch_x[i] = (nyu_resize(x, 480), img_size)
             batch_y[i] = nyu_resize(y, 240)
 
             # DEBUG:
