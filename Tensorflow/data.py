@@ -39,7 +39,6 @@ class DataLoader():
         image_decoded = tf.image.decode_jpeg(tf.io.read_file(filename), channels=3)
         depth_resized = tf.image.decode_jpeg(tf.io.read_file(label))
 
-        
         # Format
         rgb = tf.image.convert_image_dtype(image_decoded, tf.float32)
         depth = tf.image.convert_image_dtype(depth_resized, dtype=tf.float32)
@@ -47,9 +46,8 @@ class DataLoader():
         
         # Normalize the depth values (in cm)
         depth = 1000 / tf.clip_by_value(depth * 1000, 10, 1000)
-        img_size = np.array([15,20])
+        img_size = np.array([self.shape_rgb[0]/32, self.shape_rgb[1]/32])
         data_tf = tf.convert_to_tensor(img_size, np.int32)
-
 
         return (rgb, data_tf), depth
 

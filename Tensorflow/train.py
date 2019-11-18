@@ -15,7 +15,7 @@ learning_rate = 0.0001
 epochs = 5
 save_lite = True
 
-input_img = keras.Input(shape=(480, 640, 3))  # adapt this if using `channels_first` image data format
+input_img = keras.Input(shape=(480, 640, 3))  
 img_shape = keras.Input(shape=(2,),batch_size=1, name='sh',dtype='int32')
 sh = K.mean(img_shape,axis=0)
 
@@ -43,14 +43,6 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, save_weights_o
 log_dir="logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 autoencoder.fit(dataset, epochs=epochs, steps_per_epoch=dl.length // batch_size, shuffle=True, callbacks=[tensorboard_callback])
-# autoencoder.save("modellotrained")
-
-# #model.save("miomodel")
-# if save_lite:
-#     converter = tf.lite.TFLiteConverter.from_keras_model(autoencoder)
-#     tflite_model = converter.convert()
-#     open("model.tflite", "wb").write(tflite_model)
-
 
 # Convert the model.
 converter = tf.lite.TFLiteConverter.from_keras_model(autoencoder)
