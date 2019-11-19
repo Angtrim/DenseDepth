@@ -1,4 +1,4 @@
-import os
+import os, argparse
 from data import DataLoader
 import tensorflow as tf
 from loss import depth_loss_function
@@ -10,12 +10,21 @@ import datetime
 import numpy as np
 import utils
 
+# Argument Parser
+parser = argparse.ArgumentParser(description='High Quality Monocular Depth Estimation via Transfer Learning')
+parser.add_argument('--data', default='nyu', type=str, help='Training dataset.')
+parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate')
+parser.add_argument('--bs', type=int, default=4, help='Batch size')
+parser.add_argument('--epochs', type=int, default=20, help='Number of epochs')
+parser.add_argument('--debug', type=bool, default=False, help='Debug')
+args = parser.parse_args()
 
-batch_size = 8
-learning_rate = 0.0001
-epochs = 1
-save_lite = True
+# Training parameters
+batch_size = args.bs
+learning_rate = args.lr
+epochs = args.epochs
 
+# Network definition
 input_img = keras.Input(shape=(480, 640, 3))  
 img_shape = keras.Input(shape=(2,),batch_size=1, name='sh',dtype='int32')
 
@@ -27,11 +36,11 @@ autoencoder = Model([input_img,img_shape], decoder)
 autoencoder.summary()
 
 # Load training data
-train_data_loader = DataLoader(DEBUG=True)
+train_data_loader = DataLoader(DEBUG=args.debug)
 train_dataset = train_data_loader.get_batched_dataset(batch_size)
 
 # Load validation data
-val_data_loader = DataLoader(DEBUG=True, csv_file='data/nyu2_test.csv')
+val_data_loader = DataLoader(DEBUG=args.debug, csv_file='data/nyu2_test.csv')
 val_dataset = val_data_loader.get_batched_dataset(batch_size)
 
 # Compile model
