@@ -18,6 +18,7 @@ save_lite = True
 
 input_img = keras.Input(shape=(480, 640, 3))  
 img_shape = keras.Input(shape=(2,),batch_size=1, name='sh',dtype='int32')
+
 encoder = Encoder()
 decode_filters = int(encoder.layers[-1].output[0].shape[-1] // 2)
 encoder = encoder(input_img)

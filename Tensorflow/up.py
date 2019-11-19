@@ -3,6 +3,7 @@ import keras.utils.conv_utils as conv_utils
 import tensorflow as tf
 import tensorflow.keras.backend as K
 import keras.backend as K2
+import numpy as np
 
 class BilinearUpSampling2D(Layer):
     def __init__(self, size=(2, 2), data_format=None, **kwargs):
@@ -13,8 +14,8 @@ class BilinearUpSampling2D(Layer):
     def call(self, inputs):
         input_sh = inputs[0]
         
-        height = self.size[0] * input_sh[0] if input_sh[0] is not None else None
-        width = self.size[1] * input_sh[1] if input_sh[1] is not None else None
+        height = tf.math.floordiv((self.size[0] * input_sh[0]),np.float32(32)) if input_sh[0] is not None else None
+        width = tf.math.floordiv((self.size[1] * input_sh[1]),np.float32(32)) if input_sh[1] is not None else None
 
         return tf.image.resize(inputs[1], [height, width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 

@@ -4,6 +4,7 @@ from tensorflow.keras.applications import DenseNet169
 from up import BilinearUpSampling2D
 import tensorflow.keras.backend as K
 from tensorflow import keras
+import tensorflow as tf
 
 
 
@@ -54,7 +55,7 @@ class Decoder(Model):
     def call(self, features):
         img_shape, x, pool1, pool2, pool3, conv1 = features[1], features[0][0], features[0][1], features[0][2], features[0][3], features[0][4]
         # Get image shape dynamically by input and divide in by 32 (Max upscale in net)
-        sh = K.mean(img_shape,axis=0) / 32
+        sh = K.mean(img_shape, axis=0)
         up0 = self.conv2(x)
         up1 = self.up1([up0, sh, pool3])
         up2 = self.up2([up1, sh, pool2])
