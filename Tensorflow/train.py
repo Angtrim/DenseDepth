@@ -1,7 +1,7 @@
 import os, argparse
 from data import DataLoader
 import tensorflow as tf
-from loss import depth_loss_function
+from loss import depth_loss_function, edges_depth_loss_function
 from model import Encoder, Decoder
 from tensorflow import keras
 from tensorflow.keras import Model, layers
@@ -45,7 +45,7 @@ val_dataset = val_data_loader.get_batched_dataset(batch_size)
 
 # Compile model
 optimizer = tf.keras.optimizers.Adam(lr=learning_rate, amsgrad=True)
-autoencoder.compile(loss=depth_loss_function, optimizer=optimizer)
+autoencoder.compile(loss=edges_depth_loss_function, optimizer=optimizer)
 
 # Create training folder
 training_id = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
