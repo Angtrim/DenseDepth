@@ -17,6 +17,8 @@ parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate')
 parser.add_argument('--bs', type=int, default=4, help='Batch size')
 parser.add_argument('--epochs', type=int, default=20, help='Number of epochs')
 parser.add_argument('--debug', type=bool, default=False, help='Debug')
+parser.add_argument('--testcsv', type=str, default='data/nyu2_test.csv', help='Test dataset csv')
+parser.add_argument('--traincsv', type=str, default='data/nyu2_train.csv', help='Train dataset csv')
 args = parser.parse_args()
 
 # Training parameters
@@ -36,11 +38,11 @@ autoencoder = Model([input_img,img_shape], decoder)
 autoencoder.summary()
 
 # Load training data
-train_data_loader = DataLoader(DEBUG=args.debug)
+train_data_loader = DataLoader(DEBUG=args.debug, csv_file=args.traincsv)
 train_dataset = train_data_loader.get_batched_dataset(batch_size)
 
 # Load validation data
-val_data_loader = DataLoader(DEBUG=args.debug, csv_file='data/nyu2_test.csv')
+val_data_loader = DataLoader(DEBUG=args.debug, csv_file=args.testcsv)
 val_dataset = val_data_loader.get_batched_dataset(batch_size)
 
 # Compile model
@@ -60,7 +62,7 @@ autoencoder.fit(train_dataset, epochs=epochs, steps_per_epoch=train_data_loader.
 tf_lite_model = utils.save_lite_model(autoencoder, training_folder, "model.tflite")
 
 # Load an image
-image = np.array(np.random.random_sample( (480, 640, 3)), dtype=np.float32)
+image = np.array(np.random.random_sample((480, 640, 3)), dtype=np.float32)
 
 # Run lite and standard
 tflite_results = utils.run_lite_model(image, tf_lite_model)
