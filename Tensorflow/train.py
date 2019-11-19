@@ -18,12 +18,10 @@ save_lite = True
 
 input_img = keras.Input(shape=(480, 640, 3))  
 img_shape = keras.Input(shape=(2,),batch_size=1, name='sh',dtype='int32')
-sh = K.mean(img_shape,axis=0)
-
 encoder = Encoder()
-decode_filters=int(encoder.layers[-1].output[0].shape[-1] // 2)
+decode_filters = int(encoder.layers[-1].output[0].shape[-1] // 2)
 encoder = encoder(input_img)
-decoder = Decoder(decode_filters=decode_filters,sh=sh)([encoder,sh])
+decoder = Decoder(decode_filters=decode_filters)([encoder,img_shape])
 autoencoder = Model([input_img,img_shape], decoder)
 autoencoder.summary()
 

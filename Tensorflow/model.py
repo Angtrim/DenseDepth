@@ -41,7 +41,7 @@ class Encoder(Model):
 
 
 class Decoder(Model):
-    def __init__(self, decode_filters, sh):
+    def __init__(self, decode_filters):
         super(Decoder, self).__init__()
         self.conv2 = Conv2D(filters=decode_filters, kernel_size=1, padding='same', name='conv2')
         self.up1 = UpscaleBlock(filters=decode_filters // 2, size=(2, 2), name='up1')
@@ -52,7 +52,9 @@ class Decoder(Model):
 
 
     def call(self, features):
-        sh, x, pool1, pool2, pool3, conv1 = features[1], features[0][0], features[0][1], features[0][2], features[0][3], features[0][4]
+        img_shape, x, pool1, pool2, pool3, conv1 = features[1], features[0][0], features[0][1], features[0][2], features[0][3], features[0][4]
+        # Get image shape dynamically by input and divide in by 32 (Max upscale in net)
+        sh = K.mean(img_shape,axis=0) / 32
         up0 = self.conv2(x)
         up1 = self.up1([up0, sh, pool3])
         up2 = self.up2([up1, sh, pool2])

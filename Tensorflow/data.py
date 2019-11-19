@@ -46,7 +46,7 @@ class DataLoader():
         
         # Normalize the depth values (in cm)
         depth = 1000 / tf.clip_by_value(depth * 1000, 10, 1000)
-        img_size = np.array([self.shape_rgb[0]/32, self.shape_rgb[1]/32])
+        img_size = np.array([self.shape_rgb[0], self.shape_rgb[1]])
         data_tf = tf.convert_to_tensor(img_size, np.int32)
 
         return (rgb, data_tf), depth
