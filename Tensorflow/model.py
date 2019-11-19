@@ -20,8 +20,6 @@ class UpscaleBlock(Model):
     def call(self, x):
         upresult = self.up([x[1],x[0]])
         b = self.reluB(self.convB(self.reluA(self.convA(self.concat([upresult, x[2]])))))
-        print("UP")
-        print(self.concat.output_shape)
         return b
 
 
@@ -39,7 +37,6 @@ class Encoder(Model):
         self.encoder = Model(inputs=self.base_model.inputs, outputs=outputs)
 
     def call(self, x):
-        print(self.all_outputs)
         return self.encoder(x)
 
 
@@ -56,8 +53,6 @@ class Decoder(Model):
 
     def call(self, features):
         sh, x, pool1, pool2, pool3, conv1 = features[1], features[0][0], features[0][1], features[0][2], features[0][3], features[0][4]
-        print(x)
-        print(sh)
         up0 = self.conv2(x)
         up1 = self.up1([up0, sh, pool3])
         up2 = self.up2([up1, sh, pool2])

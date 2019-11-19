@@ -23,7 +23,7 @@ class DataLoader():
         nyu2_train = shuffle(nyu2_train, random_state=0)
 
         # Test on a smaller dataset
-        if DEBUG: nyu2_train = nyu2_train[:100]
+        if DEBUG: nyu2_train = nyu2_train[:10]
         
         # A vector of RGB filenames.
         self.filenames = [i[0] for i in nyu2_train]
