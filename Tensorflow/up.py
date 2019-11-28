@@ -17,7 +17,7 @@ class BilinearUpSampling2D(Layer):
         height = tf.math.floordiv((self.size[0] * input_sh[0]),np.float32(32)) if input_sh[0] is not None else None
         width = tf.math.floordiv((self.size[1] * input_sh[1]),np.float32(32)) if input_sh[1] is not None else None
 
-        return tf.image.resize(inputs[1], [height, width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+        return tf.image.resize(inputs[1], [height, width], method=tf.image.ResizeMethod.BILINEAR)
 
     def get_config(self):
         config = {'size': self.size, 'data_format': self.data_format}

@@ -22,8 +22,7 @@ def depth_loss_function(y_true, y_pred, theta=0.1, maxDepthVal=1000.0/10.0):
     return (w1 * l_ssim) + (w2 * K.mean(l_edges)) + (w3 * K.mean(l_depth))
 
 
-def edges_depth_loss_function(y_true, y_pred, maxDepthVal=1000.0 / 10.0):
-
+def edges_depth_loss_function(y_true, y_pred, theta=0.1, maxDepthVal=1000.0/10.0):
     # Edges
     dy_true, dx_true = tf.image.image_gradients(y_true)
     dy_pred, dx_pred = tf.image.image_gradients(y_pred)
@@ -56,3 +55,6 @@ def edges_depth_loss_function(y_true, y_pred, maxDepthVal=1000.0 / 10.0):
     w2 = 2.0
 
     return (w1 * K.mean(high_freq_loss)) + (w2 * K.mean(low_freq_loss))
+
+
+
